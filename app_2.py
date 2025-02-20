@@ -4,7 +4,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from prophet import Prophet
 
-# Cargar datos
 data = pd.read_csv("World Energy Consumption.csv", index_col='year')
 data.index = pd.to_datetime(data.index, format='%Y')
 
@@ -14,7 +13,6 @@ def load_prophet_data():
     oceania_continente = pd.read_csv("continente_oceania.csv")
     asia_continente = pd.read_csv("continente_asia.csv")
 
-    # Procesar datos
     def process_dataframe(df):
         df = df.set_index("Year").drop(columns=["Entity"])
         df.columns = ["electricity_generation"]
@@ -85,23 +83,19 @@ rename_columns = {
 }
 
 def plot_energy_distribution(continente, data):
-    # Filtrar datos por continente
     data['continente'] = data['country'].map(lambda x: next((k for k, v in continent_map.items() if x in v), None))
     df_continente = data[data['continente'] == continente]
     df_continente = df_continente.groupby(['year', 'continente'])[col_electricity].sum().reset_index('continente')
     df_continente = df_continente[df_continente.index.year > 1970]
 
-    # Calcular columnas adicionales
     df_continente['carbon'] = df_continente['low_carbon_electricity'] + df_continente['coal_electricity']
     df_continente['renovable'] = df_continente['other_renewable_electricity'] + df_continente['other_renewable_exc_biofuel_electricity']
 
-    # Eliminar columnas redundantes y renombrar
     df_continente.drop(columns=['low_carbon_electricity', 'other_renewable_electricity',
                               'other_renewable_exc_biofuel_electricity', 'coal_electricity'],
                       inplace=True)
     df_continente.rename(columns=rename_columns, inplace=True)
 
-    # Configurar estilo y crear gráficos
     sns.set_theme(style="whitegrid")
     colors = sns.color_palette('muted', 10)
     fig, ax = plt.subplots(1, 2, figsize=(20, 10))
@@ -109,7 +103,6 @@ def plot_energy_distribution(continente, data):
     energy_sources = ['nuclear', 'petroleo', 'solar', 'eolica', 'fosil',
                      'gas', 'hidro', 'bio fuel', 'carbon', 'renovable']
 
-    # Gráfico de líneas
     sns.lineplot(
         data=df_continente[energy_sources],
         palette=colors,
@@ -120,7 +113,6 @@ def plot_energy_distribution(continente, data):
         linewidth=2.5
     )
 
-    # Configuración del gráfico de líneas
     ax[0].set_title(f'Evolución de la producción de energía en {continente}',
                     fontsize=16, weight='bold', color='#333333')
     ax[0].set_xlabel('Año', fontsize=14)
@@ -130,7 +122,6 @@ def plot_energy_distribution(continente, data):
                 frameon=True, shadow=True)
     ax[0].grid(True, linestyle='--', alpha=0.5)
 
-    # Gráfico de pastel
     totals = df_continente[energy_sources].sum()
     porcentajes = (totals / totals.sum()) * 100
 
@@ -145,111 +136,95 @@ def plot_energy_distribution(continente, data):
         wedgeprops=dict(edgecolor='w')
     )
 
-    # Agregar círculo central al gráfico de pastel
     centre_circle = plt.Circle((0, 0), 0.55, fc='white')
     ax[1].add_artist(centre_circle)
 
-    # Título del gráfico de pastel
     ax[1].set_title(f'Distribución Energía {continente}',
                     fontsize=16, weight='bold', color='#333333')
 
-    # Ajustar layout y mostrar
     plt.tight_layout()
     return fig
 
 def plot_prophet_forecast(continente, prediction_year, data_dict):
-    # Obtener datos y train_size del continente seleccionado
     country_filt, best_size = data_dict[continente]
 
-    # Preparar datos
     index = round(best_size * country_filt.shape[0])
     country_train = country_filt.iloc[:index]
     country_test = country_filt.iloc[index:]
 
-    # Preparar datos para Prophet
     df_prophet_country = country_train.reset_index().rename(columns={
         "Year": "ds",
         "electricity_generation": "y"
     })
 
-    # Ajustar modelo
     model_prophet = Prophet()
     model_prophet.fit(df_prophet_country)
 
-    # Calcular períodos adicionales hasta el año seleccionado
     last_date = country_filt.index[-1]
     years_to_predict = prediction_year - last_date.year
     total_periods = country_test.shape[0] + years_to_predict
 
-    # Crear DataFrame de fechas futuras
     future = model_prophet.make_future_dataframe(periods=total_periods, freq='Y')
 
-    # Generar predicciones
     forecast = model_prophet.predict(future)
 
-    # Crear figura
     fig, ax = plt.subplots(figsize=(12, 7))
 
-    # Plotear predicciones
-    ax.plot(forecast['ds'], forecast['yhat'], color='blue', label='Forecast')
+    ax.plot(forecast['ds'], forecast['yhat'], color='blue', label='Predicción')
     ax.fill_between(forecast['ds'],
                    forecast['yhat_lower'],
                    forecast['yhat_upper'],
                    color='blue',
                    alpha=0.2,
-                   label='Uncertainty interval')
+                   label='Intervalo de incertidumbre')
 
-    # Plotear datos de entrenamiento
     ax.scatter(country_train.index,
               country_train['electricity_generation'],
               color='black',
               s=20,
-              label='Observed data points')
+              label='Datos observados')
 
-    # Plotear datos de prueba
     ax.scatter(country_test.index,
               country_test['electricity_generation'],
               color='red',
               s=20,
-              label='Real Data')
+              label='Datos reales')
 
-    # Configurar gráfico
-    plt.title(f"Electricity Generation Forecast - {continente}")
-    plt.xlabel("Year")
-    plt.ylabel("Electricity Generation (TWh)")
+    plt.title(f"Predicción de Generación Eléctrica - {continente}")
+    plt.xlabel("Año")
+    plt.ylabel("Generación Eléctrica (TWh)")
     plt.grid(True)
     plt.legend()
 
-    # Ajustar límites del eje x para mostrar hasta el año seleccionado
     plt.xlim(country_filt.index[0], pd.Timestamp(f'{prediction_year}-01-01'))
 
     return fig
 
 def main():
-    st.title("Análisis de Producción de Energía por Continente")
+    st.title("Análisis y predicción de energia por continente")
 
-    # Cargar datos para Prophet
     prophet_data = load_prophet_data()
 
-    # Un único selector de continente
-    available_continents = list(set(continent_map.keys()) & set(prophet_data.keys()))
-    continente = st.selectbox("Selecciona un continente", available_continents)
+    control_col1, control_col2 = st.columns(2)
 
-    # Mostrar los gráficos de distribución de energía
+    with control_col1:
+        available_continents = list(set(continent_map.keys()) & set(prophet_data.keys()))
+        continente = st.selectbox("Selecciona un continente", available_continents)
+
+    with control_col2:
+        prediction_year = st.slider(
+            'Seleccionar año de predicción:',
+            min_value=2023,
+            max_value=2035,
+            value=2030,
+            step=1
+        )
+
     fig_distribution = plot_energy_distribution(continente, data)
     st.pyplot(fig_distribution)
 
-    # Mover el slider aquí, justo antes del gráfico de predicción
-    st.subheader("Predicción de Generación Eléctrica")  # Añadido un subtítulo para mejor separación
-    prediction_year = st.slider(
-        'Seleccionar año de predicción:',
-        min_value=2023,
-        max_value=2035,
-        value=2030,
-        step=1
-    )
+    st.subheader("Predicción de Generación Eléctrica")
 
-    # Mostrar el gráfico de predicción
     fig_forecast = plot_prophet_forecast(continente, prediction_year, prophet_data)
     st.pyplot(fig_forecast)
 
