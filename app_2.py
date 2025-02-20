@@ -198,7 +198,13 @@ def plot_prophet_forecast(continente, prediction_year, data_dict):
 
     plt.xlim(country_filt.index[0], pd.Timestamp(f'{prediction_year}-01-01'))
 
-    return fig
+    forecast_table = forecast[['ds', 'yhat']].copy()
+    forecast_table['ds'] = forecast_table['ds'].dt.year
+    forecast_table = forecast_table[(forecast_table['ds'] >= 2023) & (forecast_table['ds'] <= 2035)]
+    forecast_table = forecast_table.round(2)
+    forecast_table.columns = ['Año', 'Predicción']
+
+    return fig, forecast_table
 
 def main():
     st.title("Análisis y predicción de energia por continente")
@@ -225,8 +231,15 @@ def main():
 
     st.subheader("Predicción de Generación Eléctrica")
 
-    fig_forecast = plot_prophet_forecast(continente, prediction_year, prophet_data)
+    fig_forecast, forecast_data = plot_prophet_forecast(continente, prediction_year, prophet_data)
     st.pyplot(fig_forecast)
+
+    st.markdown("### Valores Predichos")
+    st.dataframe(
+        forecast_data,
+        hide_index=True,
+        use_container_width=True
+    )
 
 if __name__ == "__main__":
     main()
