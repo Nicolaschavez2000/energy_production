@@ -215,13 +215,11 @@ def main():
 
     with control_col1:
         available_continents = list(set(continent_map.keys()) & set(prophet_data.keys()))
-        # Agregamos una opción vacía al principio
         continente = st.selectbox(
             "Selecciona un continente",
             [""] + available_continents
         )
 
-    # Solo mostramos el resto de la interfaz si se ha seleccionado un continente
     if continente:
         with control_col2:
             prediction_year = st.slider(
