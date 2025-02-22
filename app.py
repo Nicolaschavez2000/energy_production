@@ -3,6 +3,13 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from prophet import Prophet
+import plotly.graph_objects as go
+
+st.set_page_config(
+    page_title="Análisis de Energía",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 data = pd.read_csv("World Energy Consumption.csv", index_col='year')
 data.index = pd.to_datetime(data.index, format='%Y')
@@ -12,18 +19,24 @@ def load_prophet_data():
     sudamerica_continente = pd.read_csv("continente_sudamerica.csv")
     oceania_continente = pd.read_csv("continente_oceania.csv")
     asia_continente = pd.read_csv("continente_asia.csv")
+    norteamerica_continente = pd.read_csv("continente_norteamerica.csv")
+    europa_continente = pd.read_csv("continente_europa.csv")
+    mundial = pd.read_csv("world_generation.csv")
 
     def process_dataframe(df):
-        df = df.set_index("Year").drop(columns=["Entity"])
+        df = df.set_index("Year")
         df.columns = ["electricity_generation"]
         df.index = pd.to_datetime(df.index, format='%Y')
         return df
 
     return {
-        'Africa': (process_dataframe(africa_continente), 0.66),
-        'Sud America': (process_dataframe(sudamerica_continente), 0.42),
-        'Oceania': (process_dataframe(oceania_continente), 0.82),
-        'Asia': (process_dataframe(asia_continente), 0.80)
+        'África': (process_dataframe(africa_continente), 0.66),
+        'Sud América': (process_dataframe(sudamerica_continente), 0.42),
+        'Oceanía': (process_dataframe(oceania_continente), 0.82),
+        'Asia': (process_dataframe(asia_continente), 0.80),
+        'Norte América': (process_dataframe(norteamerica_continente), 0.7),
+        'Europa': (process_dataframe(europa_continente), 0.7),
+        'Mundial': (process_dataframe(mundial), 0.7)
     }
 
 col_electricity = ['low_carbon_electricity',
@@ -40,7 +53,7 @@ col_electricity = ['low_carbon_electricity',
             'coal_electricity']
 
 continent_map = {
-    'Africa': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso',
+    'África': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso',
                'Burundi', 'Cabo Verde', 'Cameroon', 'Central African Republic',
                'Chad', 'Comoros', 'Congo', 'Cote d\'Ivoire', 'Democratic Republic of the Congo',
                'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea', 'Eswatini',
@@ -65,11 +78,16 @@ continent_map = {
                'Moldova', 'Monaco', 'Montenegro', 'Netherlands', 'North Macedonia', 'Norway',
                'Poland', 'Portugal', 'Romania', 'Russia', 'San Marino', 'Serbia', 'Slovakia',
                'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United Kingdom', 'Vatican City'],
-    'Norte America': ['Canada', 'Greenland', 'Mexico', 'United States'],
-    'Oceania': ['Australia', 'Fiji', 'New Zealand', 'Papua New Guinea'],
-    'Sud America': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador',
-                      'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela']
+    'Norte América': ['Canada', 'Greenland', 'Mexico', 'United States'],
+    'Oceanía': ['Australia', 'Fiji', 'New Zealand', 'Papua New Guinea'],
+    'Sud América': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador',
+                      'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela'],
 }
+
+continent_map['Mundial'] = []
+for continent, countries in continent_map.items():
+    if continent != 'Mundial':
+        continent_map['Mundial'].extend(countries)
 
 rename_columns = {
     'nuclear_electricity': 'nuclear',
@@ -83,9 +101,13 @@ rename_columns = {
 }
 
 def plot_energy_distribution(continente, data):
-    data['continente'] = data['country'].map(lambda x: next((k for k, v in continent_map.items() if x in v), None))
-    df_continente = data[data['continente'] == continente]
-    df_continente = df_continente.groupby(['year', 'continente'])[col_electricity].sum().reset_index('continente')
+    if continente == 'Mundial':
+        df_continente = data.groupby(['year'])[col_electricity].sum()
+    else:
+        data['continente'] = data['country'].map(lambda x: next((k for k, v in continent_map.items() if x in v), None))
+        df_continente = data[data['continente'] == continente]
+        df_continente = df_continente.groupby(['year'])[col_electricity].sum()
+
     df_continente = df_continente[df_continente.index.year > 1970]
 
     df_continente['carbon'] = df_continente['low_carbon_electricity'] + df_continente['coal_electricity']
@@ -196,54 +218,147 @@ def plot_prophet_forecast(continente, prediction_year, data_dict):
     plt.grid(True)
     plt.legend()
 
-    plt.xlim(country_filt.index[0], pd.Timestamp(f'{prediction_year}-01-01'))
+    plt.xlim(country_filt.index[0], pd.Timestamp(f'{prediction_year}-12-31'))
 
     forecast_table = forecast[['ds', 'yhat']].copy()
     forecast_table['ds'] = forecast_table['ds'].dt.year
-    forecast_table = forecast_table[(forecast_table['ds'] >= 2023) & (forecast_table['ds'] <= 2035)]
-    forecast_table = forecast_table.round(2)
-    forecast_table.columns = ['Año', 'Predicción']
+    forecast_table = forecast_table[(forecast_table['ds'] >= 2023) & (forecast_table['ds'] <= prediction_year)]
+
+    forecast_table['ds'] = forecast_table['ds'].apply(lambda x: f"{x + 1:,}".replace(",", ""))
+
+    forecast_table['yhat'] = forecast_table['yhat'].apply(lambda x: f"{x:.2f}".replace(".", ","))
+
+    forecast_table.columns = ['Año', 'Predicción - TWh']
 
     return fig, forecast_table
+
+def plot_continent_map(selected_continent):
+    continent_countries = {
+        'África': ['DZA', 'AGO', 'BEN', 'BWA', 'BFA', 'BDI', 'CPV', 'CMR', 'CAF',
+                  'TCD', 'COM', 'COG', 'CIV', 'COD', 'DJI', 'EGY', 'GNQ', 'ERI',
+                  'SWZ', 'ETH', 'GAB', 'GMB', 'GHA', 'GIN', 'GNB', 'KEN', 'LSO',
+                  'LBR', 'LBY', 'MDG', 'MWI', 'MLI', 'MRT', 'MUS', 'MAR', 'MOZ',
+                  'NAM', 'NER', 'NGA', 'RWA', 'STP', 'SEN', 'SYC', 'SLE', 'SOM',
+                  'ZAF', 'SSD', 'SDN', 'TZA', 'TGO', 'TUN', 'UGA', 'ZMB', 'ZWE'],
+        'Asia': ['AFG', 'ARM', 'AZE', 'BHR', 'BGD', 'BTN', 'BRN', 'KHM', 'CHN',
+                'CYP', 'GEO', 'IND', 'IDN', 'IRN', 'IRQ', 'ISR', 'JPN', 'JOR',
+                'KAZ', 'KWT', 'KGZ', 'LAO', 'LBN', 'MYS', 'MDV', 'MNG', 'MMR',
+                'NPL', 'PRK', 'OMN', 'PAK', 'PSE', 'PHL', 'QAT', 'SAU', 'SGP',
+                'KOR', 'LKA', 'SYR', 'TWN', 'TJK', 'THA', 'TLS', 'TUR', 'TKM',
+                'ARE', 'UZB', 'VNM', 'YEM'],
+        'Europa': ['ALB', 'AND', 'AUT', 'BLR', 'BEL', 'BIH', 'BGR', 'HRV', 'CZE',
+                  'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC', 'HUN', 'ISL', 'IRL',
+                  'ITA', 'XKX', 'LVA', 'LIE', 'LTU', 'LUX', 'MLT', 'MDA', 'MCO',
+                  'MNE', 'NLD', 'MKD', 'NOR', 'POL', 'PRT', 'ROU', 'RUS', 'SMR',
+                  'SRB', 'SVK', 'SVN', 'ESP', 'SWE', 'CHE', 'UKR', 'GBR', 'VAT'],
+        'Norte América': ['CAN', 'GRL', 'MEX', 'USA'],
+        'Oceanía': ['AUS', 'FJI', 'NZL', 'PNG'],
+        'Sud América': ['ARG', 'BOL', 'BRA', 'CHL', 'COL', 'ECU', 'GUY', 'PRY',
+                       'PER', 'SUR', 'URY', 'VEN']
+    }
+
+    fig = go.Figure()
+
+    if selected_continent == 'Mundial':
+        all_countries = []
+        for countries in continent_countries.values():
+            all_countries.extend(countries)
+
+        fig.add_trace(go.Choropleth(
+            locations=all_countries,
+            z=[1] * len(all_countries),
+            colorscale=[[0, 'rgb(200, 200, 255)'], [1, 'rgb(200, 200, 255)']],
+            showscale=False,
+            marker_line_color='rgb(100, 100, 100)',
+            marker_line_width=0.5
+        ))
+    else:
+        countries = continent_countries.get(selected_continent, [])
+        fig.add_trace(go.Choropleth(
+            locations=countries,
+            z=[1] * len(countries),
+            colorscale=[[0, 'rgb(100, 149, 237)'], [1, 'rgb(100, 149, 237)']],
+            showscale=False,
+            marker_line_color='rgb(50, 50, 50)',
+            marker_line_width=0.5
+        ))
+
+    fig.update_geos(
+        showcoastlines=True,
+        coastlinecolor="black",
+        showland=True,
+        landcolor="lightgray",
+        showocean=True,
+        oceancolor="lightblue",
+        projection_type="equirectangular",
+        showframe=False,
+        showcountries=True,
+        countrycolor="gray",
+        showlakes=True,
+        lakecolor="lightblue"
+    )
+
+    fig.update_layout(
+        height=300,
+        margin=dict(l=0, r=0, t=0, b=0),
+        showlegend=False,
+        geo=dict(
+            showframe=False,
+            showcoastlines=True,
+        )
+    )
+
+    return fig
 
 def main():
     st.title("Análisis y predicción de energia por continente")
 
     prophet_data = load_prophet_data()
 
-    control_col1, control_col2 = st.columns(2)
+    control_col1, control_col2, control_col3 = st.columns([1, 1, 2])
 
     with control_col1:
         available_continents = list(set(continent_map.keys()) & set(prophet_data.keys()))
         continente = st.selectbox(
             "Selecciona un continente",
-            [""] + available_continents
+            available_continents,
+            index=available_continents.index("Mundial")
         )
 
-    if continente:
-        with control_col2:
-            prediction_year = st.slider(
-                'Seleccionar año de predicción:',
-                min_value=2023,
-                max_value=2035,
-                value=2030,
-                step=1
-            )
+    with control_col2:
+        prediction_year = st.slider(
+            'Seleccionar año de predicción:',
+            min_value=2024,
+            max_value=2035,
+            value=2030,
+            step=1
+        )
 
-        st.subheader("Distribución de Energía")
-        fig_distribution = plot_energy_distribution(continente, data)
-        st.pyplot(fig_distribution)
+    fig_forecast, forecast_data = plot_prophet_forecast(continente, prediction_year, prophet_data)
 
-        st.subheader("Predicción de Generación Eléctrica")
-        fig_forecast, forecast_data = plot_prophet_forecast(continente, prediction_year, prophet_data)
-        st.pyplot(fig_forecast)
+    st.subheader("Predicción de Generación Eléctrica")
+    col_tabla, col_prediccion = st.columns([1, 2])
 
+    with col_tabla:
         st.markdown("### Valores Predichos")
         st.dataframe(
             forecast_data,
             hide_index=True,
             use_container_width=True
         )
+
+        fig_map = plot_continent_map(continente)
+        st.plotly_chart(fig_map, use_container_width=True)
+
+    with col_prediccion:
+        st.pyplot(fig_forecast, use_container_width=True)
+
+    st.markdown("<h2 style='text-align: center; margin-bottom: 20px;'>Distribución de Energía</h2>", unsafe_allow_html=True)
+
+    col_central = st.columns([1])[0]
+    with col_central:
+        fig_distribution = plot_energy_distribution(continente, data)
+        st.pyplot(fig_distribution, use_container_width=True)
 
 if __name__ == "__main__":
     main()
