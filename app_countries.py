@@ -343,50 +343,44 @@ def prediction_prophet(region, target_year, prophet_data_dict):
 
     forecast = model.predict(future)
 
-    plt.style.use('seaborn-whitegrid')
-    fig, ax = plt.subplots(figsize=(12, 7))
+    fig = go.Figure()
 
-    ax.plot(
-        prophet_df['ds'],
-        prophet_df['y'],
-        'r-',
-        linewidth=1.5,
-        label='Datos reales'
-    )
+    fig.add_trace(go.Scatter(
+        x=prophet_df['ds'],
+        y=prophet_df['y'],
+        mode='lines',
+        name='Datos reales',
+        line=dict(color='red', width=1.5)
+    ))
 
     future_forecast = forecast[forecast['ds'] > last_date]
 
     if not future_forecast.empty:
-        ax.plot(
-            [prophet_df['ds'].iloc[-1], future_forecast['ds'].iloc[0]],
-            [prophet_df['y'].iloc[-1], future_forecast['yhat'].iloc[0]],
-            'r-',
-            linewidth=1.5
-        )
+        # Añadir línea que conecta los datos reales con la predicción
+        fig.add_trace(go.Scatter(
+            x=[prophet_df['ds'].iloc[-1], future_forecast['ds'].iloc[0]],
+            y=[prophet_df['y'].iloc[-1], future_forecast['yhat'].iloc[0]],
+            mode='lines',
+            line=dict(color='red', width=1.5),
+            showlegend=False
+        ))
 
-        ax.plot(
-            future_forecast['ds'],
-            future_forecast['yhat'],
-            'b-',
-            linewidth=1.5,
-            label='Predicción (con consumo)'
-        )
+        fig.add_trace(go.Scatter(
+            x=future_forecast['ds'],
+            y=future_forecast['yhat'],
+            mode='lines',
+            name='Predicción (con consumo)',
+            line=dict(color='blue', width=1.5)
+        ))
 
-        ax.fill_between(
-            future_forecast['ds'],
-            future_forecast['yhat_lower'],
-            future_forecast['yhat_upper'],
-            color='blue',
-            alpha=0.1,
-            label='Intervalo de confianza'
-        )
-
-    ax.set_title(f"Predicción de Generación de Electricidad - {region}", pad=20)
-    ax.set_xlabel("Año")
-    ax.set_ylabel("Generación de electricidad (TWh)")
-    ax.legend(loc='upper left')
-    ax.grid(True, linestyle='-', alpha=0.2)
-    ax.set_xlim(prophet_df['ds'].min(), pd.Timestamp(f'{target_year}-12-31'))
+    fig.update_layout(
+        title=f"Predicción de Generación de Electricidad - {region}",
+        xaxis_title="Año",
+        yaxis_title="Generación de electricidad (TWh)",
+        xaxis=dict(range=[prophet_df['ds'].min(), pd.Timestamp(f'{target_year}-12-31')]),
+        legend=dict(x=0, y=1),
+        height=800
+    )
 
     forecast_table = forecast[['ds', 'yhat']].copy()
     forecast_table['ds'] = forecast_table['ds'].dt.year
@@ -401,6 +395,38 @@ def prediction_prophet(region, target_year, prophet_data_dict):
     forecast_table.columns = ['Año', 'Predicción - TWh']
 
     return fig, forecast_table
+
+    # if not future_forecast.empty:
+    #     ax.plot(
+    #         [prophet_df['ds'].iloc[-1], future_forecast['ds'].iloc[0]],
+    #         [prophet_df['y'].iloc[-1], future_forecast['yhat'].iloc[0]],
+    #         'r-',
+    #         linewidth=1.5
+    #     )
+
+    #     ax.plot(
+    #         future_forecast['ds'],
+    #         future_forecast['yhat'],
+    #         'b-',
+    #         linewidth=1.5,
+    #         label='Predicción (con consumo)'
+    #     )
+
+        # ax.fill_between(
+        #     future_forecast['ds'],
+        #     future_forecast['yhat_lower'],
+        #     future_forecast['yhat_upper'],
+        #     color='blue',
+        #     alpha=0.1,
+        #     label='Intervalo de confianza'
+        # )
+
+    # ax.set_title(f"Predicción de Generación de Electricidad - {region}", pad=20)
+    # ax.set_xlabel("Año")
+    # ax.set_ylabel("Generación de electricidad (TWh)")
+    # ax.legend(loc='upper left')
+    # ax.grid(True, linestyle='-', alpha=0.2)
+    # ax.set_xlim(prophet_df['ds'].min(), pd.Timestamp(f'{target_year}-12-31'))
 
 def mapa_region(selected_region):
     """Crea un mapa interactivo para la región seleccionada"""
@@ -551,7 +577,7 @@ def main():
         st.plotly_chart(fig_map, use_container_width=True)
 
     with col_prediccion:
-        st.pyplot(fig_forecast, use_container_width=True)
+        st.plotly_chart(fig_forecast, use_container_width=True)
 
     # Mostrar distribución de energía
     st.markdown("<h2 style='text-align: center; margin-bottom: 20px;'>Distribución de Energía</h2>",
