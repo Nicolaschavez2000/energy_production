@@ -3,7 +3,10 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from prophet import Prophet
+from streamlit_plotly_events import plotly_events
+import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 st.set_page_config(
     page_title="Análisis de Energía",
@@ -227,6 +230,7 @@ def data_prophet():
 
     return prophet_data
 
+
 def plot_energy_distribution(region, data):
     """Visualiza la distribución de fuentes de energía para una región"""
     is_continent = region in ['Mundial', 'África', 'Asia', 'Europa', 'Norte América', 'Oceanía', 'Sud América']
@@ -255,62 +259,118 @@ def plot_energy_distribution(region, data):
         'other_renewable_exc_biofuel_electricity', 'coal_electricity'
     ])
 
-    energy_data = energy_data.rename(columns=RENAME_COLUMNS)
-
-    sns.set_theme(style="whitegrid")
-    colors = sns.color_palette('muted', 10)
-    fig, ax = plt.subplots(1, 2, figsize=(20, 10))
-
     energy_sources = ['nuclear', 'petroleo', 'solar', 'eolica', 'fosil',
                      'gas', 'hidro', 'bio fuel', 'carbon', 'renovable']
 
+    energy_data = energy_data.rename(columns=RENAME_COLUMNS)
+
+    # Crear dos figuras separadas
+    fig1 = go.Figure()
+
+    # Agregar trazas para la evolución de la producción (línea)
     for source in energy_sources:
-        if source not in energy_data.columns:
-            energy_data[source] = 0
-
-    sns.lineplot(
-        data=energy_data[energy_sources],
-        palette=colors,
-        linestyle='-',
-        ax=ax[0],
-        linewidth=2.5
-    )
-
-    ax[0].set_title(f'Evolución de la producción de energía en {region}',
-                    fontsize=16, weight='bold', color='#333333')
-    ax[0].set_xlabel('Año', fontsize=14)
-    ax[0].set_ylabel('Energía (TW)', fontsize=14)
-    ax[0].legend(energy_sources, loc='upper left',
-                bbox_to_anchor=(0.05, 0.95), fontsize=12,
-                frameon=True, shadow=True)
-    ax[0].grid(True, linestyle='--', alpha=0.5)
-
-    totals = energy_data[energy_sources].sum()
-
-    if totals.sum() > 0:
-        percentages = (totals / totals.sum()) * 100
-
-        patches, texts, autotexts = ax[1].pie(
-            percentages,
-            labels=totals.index,
-            colors=colors,
-            autopct=lambda p: '{:.1f}%'.format(p) if p > 0 else '',
-            textprops={'color': "black", 'fontsize': 12},
-            pctdistance=0.85,
-            startangle=140,
-            wedgeprops=dict(edgecolor='w')
+        fig1.add_trace(
+            go.Scatter(
+                x=energy_data.index.year,
+                y=energy_data[source],
+                mode='lines+markers',
+                name=source,
+                marker=dict(size=6)
+            )
         )
 
-        centre_circle = plt.Circle((0, 0), 0.55, fc='white')
-        ax[1].add_artist(centre_circle)
-    else:
-        ax[1].text(0.5, 0.5, "No hay datos disponibles", ha='center', va='center')
+    fig1.update_layout(
+        title=f'Evolución de la producción de energía en {region}',
+        xaxis_title="Año",
+        yaxis_title="TWh",
+        legend=dict(
+            orientation="v",
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=1.02,  # Posicionar leyenda a la derecha del gráfico
+            font=dict(size=10)
+        ),
+        width=500,
+        height=600,
+        margin=dict(t=50, b=50, l=50, r=100)  # Aumentar margen derecho para la leyenda
+    )
 
-    ax[1].set_title(f'Distribución Energía {region}',
-                    fontsize=16, weight='bold', color='#333333')
+    # Crear figura para el gráfico de pastel
+    fig2 = go.Figure()
 
-    plt.tight_layout()
-    return fig
+    # Calcular totales y porcentajes para el gráfico de pastel
+    totals = energy_data[energy_sources].sum()
+    porcentajes = (totals / totals.sum()) * 100
+
+    # Agregar la traza de pastel (donut)
+    fig2.add_trace(
+        go.Pie(
+            labels=totals.index,
+            values=porcentajes,
+            hole=0.5,
+            textinfo='percent',
+            textposition='inside',
+            insidetextorientation='radial',
+            textfont=dict(size=10),
+            marker=dict(line=dict(color='#000000', width=1))
+        )
+    )
+
+    fig2.update_layout(
+        title=f'Distribución Energía {region}',
+        legend=dict(
+            orientation="v",
+            yanchor="top",
+            y=1,
+            xanchor="left",
+            x=1.02,  # Posicionar leyenda a la derecha del gráfico
+            font=dict(size=10)
+        ),
+        width=500,
+        height=600,
+        margin=dict(t=50, b=50, l=50, r=100)  # Aumentar margen derecho para la leyenda
+    )
+
+    # Crear un subplot para combinar ambas figuras
+    subfig = make_subplots(
+        rows=1, cols=2,
+        specs=[[{"type": "xy"}, {"type": "domain"}]],
+        horizontal_spacing=0.05  # Reducir el espacio entre los gráficos
+    )
+
+    # Transferir las trazas de fig1 a subfig
+    for trace in fig1.data:
+        subfig.add_trace(trace, row=1, col=1)
+
+    # Transferir las trazas de fig2 a subfig
+    for trace in fig2.data:
+        subfig.add_trace(trace, row=1, col=2)
+
+    # Actualizar el layout final
+    subfig.update_layout(
+        width=1000,
+        height=600,
+        showlegend=True
+    )
+
+    # Aplicar títulos
+    subfig.update_xaxes(title_text="Año", row=1, col=1)
+    subfig.update_yaxes(title_text="TWh", row=1, col=1, rangemode="tozero")
+
+    # CORRECCIÓN: Eliminar agrupación de leyendas para permitir toggle individual
+    for i in range(len(subfig.data)):
+        if i < len(fig1.data):  # Para las trazas del gráfico de líneas
+            subfig.data[i].showlegend = True
+
+        else:  # Para las trazas del gráfico de pastel
+            subfig.data[i].showlegend = True
+            subfig.data[i].legendgroup = "group2"
+            subfig.data[i].legendgrouptitle = dict(text="Distribución")
+
+    return subfig
+
+
 
 def prediction_prophet(region, target_year, prophet_data_dict):
     """Genera predicciones usando Prophet con variable exógena de consumo"""
@@ -348,9 +408,9 @@ def prediction_prophet(region, target_year, prophet_data_dict):
     fig.add_trace(go.Scatter(
         x=prophet_df['ds'],
         y=prophet_df['y'],
-        mode='lines',
+        mode='lines+markers',
         name='Datos reales',
-        line=dict(color='red', width=1.5)
+        line=dict(color='red', width=3)
     ))
 
     future_forecast = forecast[forecast['ds'] > last_date]
@@ -360,17 +420,17 @@ def prediction_prophet(region, target_year, prophet_data_dict):
         fig.add_trace(go.Scatter(
             x=[prophet_df['ds'].iloc[-1], future_forecast['ds'].iloc[0]],
             y=[prophet_df['y'].iloc[-1], future_forecast['yhat'].iloc[0]],
-            mode='lines',
-            line=dict(color='red', width=1.5),
+            mode='lines+markers',
+            line=dict(color='red', width=3),
             showlegend=False
         ))
 
         fig.add_trace(go.Scatter(
             x=future_forecast['ds'],
             y=future_forecast['yhat'],
-            mode='lines',
+            mode='lines+markers',
             name='Predicción (con consumo)',
-            line=dict(color='blue', width=1.5)
+            line=dict(color='blue', width=3)
         ))
 
     fig.update_layout(
@@ -567,7 +627,7 @@ def main():
     with col_tabla:
         st.markdown("### Valores Predichos y Métricas")
         st.dataframe(
-            forecast_data,
+            forecast_data[1:],
             hide_index=True,
             use_container_width=True
         )
@@ -586,7 +646,7 @@ def main():
     col_central = st.columns([1])[0]
     with col_central:
         fig_distribution = plot_energy_distribution(selected_region, data)
-        st.pyplot(fig_distribution, use_container_width=True)
+        st.plotly_chart(fig_distribution, use_container_width=True)
 
 if __name__ == "__main__":
     main()
