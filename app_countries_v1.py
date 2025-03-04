@@ -282,6 +282,8 @@ def plot_energy_distribution(region, data):
             ),
             row=1, col=1
         )
+    fig.update_layout(xaxis=dict(showgrid=True, griddash='dot'))
+    fig.update_layout(yaxis=dict(showgrid=True, griddash='dot'))
 
     # Calcular totales y porcentajes para el gráfico de pastel
     totals = energy_data[energy_sources].sum()
@@ -341,10 +343,11 @@ def prediction_prophet(region, target_year, prophet_data_dict):
     fig.add_trace(go.Scatter(
         x=prophet_df['ds'],
         y=prophet_df['y'],
-        mode='lines',
+        mode='lines+markers',
         name='Datos reales',
-        line=dict(color='red', width=1.5)
+        line=dict(color='red', width=2)
     ))
+
 
     future_forecast = forecast[forecast['ds'] > last_date]
 
@@ -361,10 +364,12 @@ def prediction_prophet(region, target_year, prophet_data_dict):
         fig.add_trace(go.Scatter(
             x=future_forecast['ds'],
             y=future_forecast['yhat'],
-            mode='lines',
+            mode='lines+markers',
             name='Predicción (con consumo)',
-            line=dict(color='blue', width=1.5)
+            line=dict(color='blue', width=3)
         ))
+    fig.update_layout(xaxis=dict(showgrid=True, griddash='dot'))
+    fig.update_layout(yaxis=dict(showgrid=True, griddash='dot'))
 
     fig.update_layout(
         title=f"Predicción de Generación de Electricidad - {region}",
@@ -374,6 +379,7 @@ def prediction_prophet(region, target_year, prophet_data_dict):
         legend=dict(x=0, y=1),
         height=800
     )
+
 
     forecast_table = forecast[['ds', 'yhat']].copy()
     forecast_table['ds'] = forecast_table['ds'].dt.year
