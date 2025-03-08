@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 CONTINENTS = {
-    'África': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cabo Verde',
+    'Africa': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cabo Verde',
                'Cameroon', 'Central African Republic', 'Chad', 'Comoros', 'Congo', 'Cote d\'Ivoire',
                'Democratic Republic of the Congo', 'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea',
                'Eswatini', 'Ethiopia', 'Gabon', 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Kenya',
@@ -31,16 +31,16 @@ CONTINENTS = {
              'Singapore', 'South Korea', 'Sri Lanka', 'Syria', 'Taiwan', 'Tajikistan',
              'Thailand', 'Timor-Leste', 'Turkey', 'Turkmenistan', 'United Arab Emirates',
              'Uzbekistan', 'Vietnam', 'Yemen'],
-    'Europa': ['Albania', 'Andorra', 'Austria', 'Belarus', 'Belgium', 'Bosnia and Herzegovina',
+    'Europe': ['Albania', 'Andorra', 'Austria', 'Belarus', 'Belgium', 'Bosnia and Herzegovina',
                'Bulgaria', 'Croatia', 'Czech Republic', 'Denmark', 'Estonia', 'Finland',
                'France', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Italy',
                'Kosovo', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Malta',
                'Moldova', 'Monaco', 'Montenegro', 'Netherlands', 'North Macedonia', 'Norway',
                'Poland', 'Portugal', 'Romania', 'Russia', 'San Marino', 'Serbia', 'Slovakia',
                'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United Kingdom', 'Vatican City'],
-    'Norte América': ['Canada', 'Greenland', 'Mexico', 'United States'],
-    'Oceanía': ['Australia', 'Fiji', 'New Zealand', 'Papua New Guinea'],
-    'Sud América': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador',
+    'North America': ['Canada', 'Greenland', 'Mexico', 'United States'],
+    'Oceania': ['Australia', 'Fiji', 'New Zealand', 'Papua New Guinea'],
+    'South America': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador',
                   'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela'],
 }
 
@@ -78,7 +78,7 @@ ELECTRICITY_COLUMNS = {
 }
 
 CONTINENTS = {
-    'África': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cabo Verde',
+    'Africa': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cabo Verde',
                'Cameroon', 'Central African Republic', 'Chad', 'Comoros', 'Congo', 'Cote d\'Ivoire',
                'Democratic Republic of the Congo', 'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea',
                'Eswatini', 'Ethiopia', 'Gabon', 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Kenya',
@@ -95,16 +95,16 @@ CONTINENTS = {
              'Singapore', 'South Korea', 'Sri Lanka', 'Syria', 'Taiwan', 'Tajikistan',
              'Thailand', 'Timor-Leste', 'Turkey', 'Turkmenistan', 'United Arab Emirates',
              'Uzbekistan', 'Vietnam', 'Yemen'],
-    'Europa': ['Albania', 'Andorra', 'Austria', 'Belarus', 'Belgium', 'Bosnia and Herzegovina',
+    'Europe': ['Albania', 'Andorra', 'Austria', 'Belarus', 'Belgium', 'Bosnia and Herzegovina',
                'Bulgaria', 'Croatia', 'Czech Republic', 'Denmark', 'Estonia', 'Finland',
                'France', 'Germany', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Italy',
                'Kosovo', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Malta',
                'Moldova', 'Monaco', 'Montenegro', 'Netherlands', 'North Macedonia', 'Norway',
                'Poland', 'Portugal', 'Romania', 'Russia', 'San Marino', 'Serbia', 'Slovakia',
                'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Ukraine', 'United Kingdom', 'Vatican City'],
-    'Norte América': ['Canada', 'Greenland', 'Mexico', 'United States'],
-    'Oceanía': ['Australia', 'Fiji', 'New Zealand', 'Papua New Guinea'],
-    'Sud América': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador',
+    'North America': ['Canada', 'Greenland', 'Mexico', 'United States'],
+    'Oceania': ['Australia', 'Fiji', 'New Zealand', 'Papua New Guinea'],
+    'South America': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador',
                   'Guyana', 'Paraguay', 'Peru', 'Suriname', 'Uruguay', 'Venezuela'],
 }
 
@@ -155,17 +155,17 @@ PROPHET_PARAMS = {
                     'seasonality_mode': 'multiplicative', 'train_size': 0.7,
                     'best_rmse': 28.99},
 
-    'África': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 0.1,
+    'Africa': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 0.1,
               'seasonality_mode': 'multiplicative'},
     'Asia': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 0.1,
             'seasonality_mode': 'multiplicative'},
-    'Europa': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 0.1,
+    'Europe': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 0.1,
               'seasonality_mode': 'additive'},
-    'Norte América': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 0.1,
+    'North America': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 0.1,
                      'seasonality_mode': 'additive'},
-    'Oceanía': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 10.0,
+    'Oceania': {'train_size': 0.7, 'changepoint_prior_scale': 0.5, 'seasonality_prior_scale': 10.0,
                'seasonality_mode': 'additive'},
-    'Sud América': {'train_size': 0.6, 'changepoint_prior_scale': 0.1, 'seasonality_prior_scale': 0.01,
+    'South America': {'train_size': 0.6, 'changepoint_prior_scale': 0.1, 'seasonality_prior_scale': 0.01,
                    'seasonality_mode': 'additive'},
     'Mundial': {'train_size': 0.7, 'changepoint_prior_scale': 0.1, 'seasonality_prior_scale': 1.0,
                'seasonality_mode': 'additive'},
@@ -230,7 +230,7 @@ def data_continente():
     for continent in continent_map.keys():
         continent_subset = continent_data[continent_data['continent'] == continent].copy()
 
-        if continent == 'África' and not continent_subset.empty:
+        if continent == 'Africa' and not continent_subset.empty:
             continent_subset = continent_subset[continent_subset.index < pd.Timestamp('2022-01-01')]
 
         if not continent_subset.empty:
@@ -273,7 +273,7 @@ def data_prophet():
 
 def plot_energy_distribution(region, data):
     """Visualiza la distribución de fuentes de energía para una región"""
-    is_continent = region in ['Mundial', 'África', 'Asia', 'Europa', 'Norte América', 'Oceanía', 'Sud América']
+    is_continent = region in ['Mundial', 'Africa', 'Asia', 'Europe', 'North America', 'Oceania', 'South America']
 
 
     if region == 'Mundial':
@@ -450,7 +450,7 @@ def prediction_prophet(region, target_year, prophet_data_dict):
 def mapa_region(selected_region):
     """Crea un mapa interactivo para la región seleccionada"""
     iso_codes = {
-        'África': ['DZA', 'AGO', 'BEN', 'BWA', 'BFA', 'BDI', 'CPV', 'CMR', 'CAF',
+        'Africa': ['DZA', 'AGO', 'BEN', 'BWA', 'BFA', 'BDI', 'CPV', 'CMR', 'CAF',
                   'TCD', 'COM', 'COG', 'CIV', 'COD', 'DJI', 'EGY', 'GNQ', 'ERI',
                   'SWZ', 'ETH', 'GAB', 'GMB', 'GHA', 'GIN', 'GNB', 'KEN', 'LSO',
                   'LBR', 'LBY', 'MDG', 'MWI', 'MLI', 'MRT', 'MUS', 'MAR', 'MOZ',
@@ -462,14 +462,14 @@ def mapa_region(selected_region):
                 'NPL', 'PRK', 'OMN', 'PAK', 'PSE', 'PHL', 'QAT', 'SAU', 'SGP',
                 'KOR', 'LKA', 'SYR', 'TWN', 'TJK', 'THA', 'TLS', 'TUR', 'TKM',
                 'ARE', 'UZB', 'VNM', 'YEM'],
-        'Europa': ['ALB', 'AND', 'AUT', 'BLR', 'BEL', 'BIH', 'BGR', 'HRV', 'CZE',
+        'Europe': ['ALB', 'AND', 'AUT', 'BLR', 'BEL', 'BIH', 'BGR', 'HRV', 'CZE',
                   'DNK', 'EST', 'FIN', 'FRA', 'DEU', 'GRC', 'HUN', 'ISL', 'IRL',
                   'ITA', 'XKX', 'LVA', 'LIE', 'LTU', 'LUX', 'MLT', 'MDA', 'MCO',
                   'MNE', 'NLD', 'MKD', 'NOR', 'POL', 'PRT', 'ROU', 'RUS', 'SMR',
                   'SRB', 'SVK', 'SVN', 'ESP', 'SWE', 'CHE', 'UKR', 'GBR', 'VAT'],
-        'Norte América': ['CAN', 'GRL', 'MEX', 'USA'],
-        'Oceanía': ['AUS', 'FJI', 'NZL', 'PNG'],
-        'Sud América': ['ARG', 'BOL', 'BRA', 'CHL', 'COL', 'ECU', 'GUY', 'PRY',
+        'North America': ['CAN', 'GRL', 'MEX', 'USA'],
+        'Oceania': ['AUS', 'FJI', 'NZL', 'PNG'],
+        'South America': ['ARG', 'BOL', 'BRA', 'CHL', 'COL', 'ECU', 'GUY', 'PRY',
                        'PER', 'SUR', 'URY', 'VEN'],
 
         'United States': ['USA'],
