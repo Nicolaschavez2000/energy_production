@@ -275,7 +275,7 @@ def plot_energy_distribution(region, data):
     """Visualiza la distribución de fuentes de energía para una región"""
     is_continent = region in ['Mundial', 'África', 'Asia', 'Europa', 'Norte América', 'Oceanía', 'Sud América']
 
-    print(data)
+
     if region == 'Mundial':
         energy_data = data.groupby(['year'])[ELECTRICITY_COLUMNS['generacion']].sum()
 
