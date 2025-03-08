@@ -24,16 +24,17 @@ data = load_data()
 
 ELECTRICITY_COLUMNS = {
     'generacion': [
-        'low_carbon_electricity', 'nuclear_electricity', 'oil_electricity',
-        'other_renewable_electricity', 'other_renewable_exc_biofuel_electricity',
-        'solar_electricity', 'wind_electricity', 'fossil_electricity',
-        'gas_electricity', 'hydro_electricity', 'biofuel_electricity',
-        'coal_electricity'
+        'nuclear_electricity', 'oil_electricity',
+        'solar_electricity', 'wind_electricity',
+        'gas_electricity', 'hydro_electricity',
+        'biofuel_electricity','coal_electricity'
+
     ],
     'consumo': [
-        'biofuel_consumption', 'coal_consumption', 'fossil_fuel_consumption',
-        'gas_consumption', 'hydro_consumption', 'low_carbon_consumption',
-        'nuclear_consumption', 'oil_consumption', 'solar_consumption'
+        'nuclear_consumption', 'oil_consumption',
+        'solar_consumption','wind_consumption',
+        'gas_consumption', 'hydro_consumption',
+        'biofuel_consumption', 'coal_consumption',
     ]
 }
 
@@ -136,7 +137,7 @@ RENAME_COLUMNS = {
     'oil_electricity': 'petroleo',
     'solar_electricity': 'solar',
     'wind_electricity': 'eolica',
-    'fossil_electricity': 'fosil',
+    'coal_electricity': 'carbon',
     'gas_electricity': 'gas',
     'hydro_electricity': 'hidro',
     'biofuel_electricity': 'bio fuel',
@@ -249,15 +250,15 @@ def plot_energy_distribution(region, data):
 
     energy_data = energy_data[energy_data.index.year >= 1985]
 
-    energy_data['carbon'] = energy_data['low_carbon_electricity'] + energy_data['coal_electricity']
-    energy_data['renovable'] = energy_data['other_renewable_electricity'] + energy_data['other_renewable_exc_biofuel_electricity']
+    # energy_data['carbon'] = energy_data['low_carbon_electricity'] + energy_data['coal_electricity']
+    # energy_data['renovable'] = energy_data['other_renewable_electricity'] + energy_data['other_renewable_exc_biofuel_electricity']
 
-    energy_data = energy_data.drop(columns=[
-        'low_carbon_electricity', 'other_renewable_electricity',
-        'other_renewable_exc_biofuel_electricity', 'coal_electricity'
-    ])
-    energy_sources = ['nuclear', 'petroleo', 'solar', 'eolica', 'fosil',
-                     'gas', 'hidro', 'bio fuel', 'carbon', 'renovable']
+    # energy_data = energy_data.drop(columns=[
+    #     'low_carbon_electricity', 'other_renewable_electricity',
+    #     'other_renewable_exc_biofuel_electricity', 'coal_electricity'
+    # ])
+    energy_sources = ['nuclear', 'petroleo', 'solar', 'eolica',
+                     'gas', 'hidro', 'bio fuel', 'carbon']
 
     energy_data = energy_data.rename(columns=RENAME_COLUMNS)
 
